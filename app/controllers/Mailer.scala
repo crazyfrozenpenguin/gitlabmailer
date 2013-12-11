@@ -14,7 +14,7 @@ object Mailer extends Controller {
   def fromGitlab(app: String) = Action(parse.json) {
     request => {
       Option(app) match {
-        case None => BadRequest(Json.obj("status" -> "KO", "message" -> "Application identifier required"))
+        case None => BadRequest(Json.obj("status" -> "KO", "message" -> "Application identifier required")).as("application/json")
         case _ => {
           System.out.println("Request mailer app: " + app)
           System.out.println("Received body: " + request.body)
@@ -26,7 +26,7 @@ object Mailer extends Controller {
             message = request.body.toString()
           )
 
-          Ok
+          Ok(Json.obj("status" -> "OK")).as("application/json")
         }
       }
     }

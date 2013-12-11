@@ -1,5 +1,5 @@
-Gitlab Mail
------------
+Gitlab Mailer
+-------------
 
 This small application receives updates from Gitlab and pushes updates desired email addresses.
 
