@@ -1,1 +1,77 @@
-hello account
+<!DOCTYPE html>
+<html ng-app="GitlabMailer">
+<head>
+    <title>Gitlab Mailer</title>
+    <script type="text/javascript" src="javascripts/angular-1.2.4.min.js"></script>
+    <!-- script type="text/javascript" src="javascripts/jquery-1.9.0.min.js"></script -->
+</head>
+<body>
+<div ng-controller="AccountController">
+    <h1>Gitlab Mailer</h1>
+    <small>Application Web Hook end-point address: http://host:9000/rest/gitlab/:app</small>
+    </br></br></br>
+    <form>
+        <label>Email</label> <input type="email" ng-model="newAccount.email"/>
+        <label>Projects</label> <input type="text" ng-model="newAccount.projects"/>
+        <button ng-click="saveAccount()">Save</button>
+    </form>
+    <h2>Accounts</h2>
+
+    <table>
+        <thead>
+        <tr>Email</tr>
+        <tr>Projects</tr>
+        <tr>Action</tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="account in accounts">
+            <td> {{ account.email }}</td>
+            <td> {{account.projects }}</td>
+            <td>
+                <a href="#" ng-click="edit(account.email)">edit</a> |
+                <a href="#" ng-click="delete(account.email)">delete</a>
+            </td>
+        </tbody>
+    </table>
+
+</div>
+<script type="text/javascript">
+    angular.module('GitlabMailer', []).controller('AccountController', ['$scope', '$http', function($scope, $http) {
+	    $scope.accounts = [];
+
+	    $scope.saveAccount = function() {
+	        if ($scope.newAccount.email != null) {
+               $http({method: 'POST', url: '/rest/db/account', header: {'Content-Type' : 'application/json'}, data: $scope.newAccount}).success(function(data) {
+                    retrieveAccounts();
+                });
+                $scope.newAccount = {};
+		    }
+	    }
+
+	    $scope.delete = function(email) {
+           $http({method: 'DELETE', url: '/rest/db/account/' + email, header: {'Content-Type' : 'application/json'}}).success(function(data) {
+                retrieveAccounts();
+            });
+	    }
+
+        $scope.edit = function(email) {
+            for(i in $scope.accounts) {
+                if($scope.accounts[i].email == email) {
+                    $scope.newAccount = angular.copy($scope.accounts[i]);
+                }
+            }
+        }
+
+        function retrieveAccounts() {
+            $http({method: 'GET', url: '/rest/db/accounts', header : {'Content-Type' : 'application/json'}}).success(function(data) {
+                $scope.accounts = data;
+            });
+        };
+
+        retrieveAccounts();
+
+	}]);
+
+</script>
+</body>
+</html>

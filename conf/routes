@@ -10,3 +10,5 @@ POST    /rest/gitlab/:app                controllers.Mailer.fromGitlab(app: Stri
 GET     /rest/db/accounts                controllers.Application.listAccounts
 
 POST    /rest/db/account                 controllers.Application.updateAccount
+
+DELETE  /rest/db/account/:email          controllers.Application.deleteAccount(email:String)

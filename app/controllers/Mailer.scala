@@ -19,14 +19,19 @@ object Mailer extends Controller {
           System.out.println("Request mailer app: " + app)
           System.out.println("Received body: " + request.body)
 
-          send a new Mail (
-            from = ("gitlabmailer@test.com", "Gitlab Mailer"),
-            to = Seq("bmrosantos@gmail.com"),
-            subject = "Import stuff",
-            message = request.body.toString()
-          )
+          try {
+            send a new Mail(
+              from = ("gitlabmailer@test.com", "Gitlab Mailer"),
+              to = Seq("bmrosantos@gmail.com"),
+              subject = "Import stuff",
+              message = request.body.toString()
+            )
 
-          Ok(Json.obj("status" -> "OK")).as("application/json")
+            Ok(Json.obj("status" -> "OK")).as("application/json")
+
+          } catch {
+            case _ => ServiceUnavailable(Json.obj("status" -> "KO", "message" -> "Internal Server Error"))
+          }
         }
       }
     }

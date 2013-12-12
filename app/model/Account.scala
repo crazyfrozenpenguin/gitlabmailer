@@ -6,7 +6,9 @@ import play.api.Play.current
 import anorm._
 import anorm.SqlParser._
 
-import play.api.libs.json.{Writes, Json}
+import play.api.libs.json._
+import anorm.~
+import anorm.Id
 
 case class Account(email:Pk[String], projects:String)
 
@@ -22,6 +24,14 @@ object Account {
       "email" -> Json.toJson(acc.email.get),
       "projects" -> Json.toJson(acc.projects)
     )
+  }
+
+  implicit object AccountReads extends Reads[Account] {
+     def reads(json:JsValue): JsResult[Account] = JsSuccess(Account(
+         Id((json \ "email").as[String]),
+         (json \ "projects").as[String]
+       )
+     )
   }
 
   val simple = {
@@ -42,6 +52,33 @@ object Account {
       SQL("insert into account(email, projects) values ({email},{projects})").on(
         'email -> account.email, 'projects -> account.projects
       ).executeUpdate()
+    }
+  }
+
+  def update(account:Account):Unit = {
+    DB.withConnection {
+      implicit connection =>
+        SQL("update account set projects = {projects} where email = {email}").on(
+          'email -> account.email, 'projects -> account.projects
+        ).executeUpdate()
+    }
+  }
+
+  def exists(email:String):Boolean = {
+    DB.withConnection { implicit connection =>
+      val sql = SQL("select 1 from account where email = {email}").on(
+        'email -> Id(email)
+      )
+      sql.execute()
+      sql.list().size == 1
+    }
+  }
+
+  def delete(email:String):Unit = {
+    DB.withConnection { implicit connection =>
+      SQL("delete from account where email = {email}").on(
+        'email -> email
+      ).execute();
     }
   }
 
