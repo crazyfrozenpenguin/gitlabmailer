@@ -2,26 +2,35 @@
 <html ng-app="GitlabMailer">
 <head>
     <title>Gitlab Mailer</title>
+    <link rel="icon" href="images/favicon.png" type="image/png" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pure-0.3.0.min.css">
     <script type="text/javascript" src="javascripts/angular-1.2.4.min.js"></script>
-    <!-- script type="text/javascript" src="javascripts/jquery-1.9.0.min.js"></script -->
 </head>
 <body>
-<div ng-controller="AccountController">
+<div ng-controller="AccountController" style="margin:10px;">
+
+    <image src="images/gitlab-mailer.png" style="float:left; margin-right:10px;"/>
+    </br>
     <h1>Gitlab Mailer</h1>
-    <small>Application Web Hook end-point address: http://host:9000/rest/gitlab/:app</small>
-    </br></br></br>
-    <form>
+    <small>Web Hook template: <span style="color:green;">http://host:9000/rest/gitlab/:app</span></small>
+    </br></br>
+
+    <p style="clear:both;"></p>
+
+    <form class="pure-form">
         <label>Email</label> <input type="email" ng-model="newAccount.email"/>
         <label>Projects</label> <input type="text" ng-model="newAccount.projects"/>
-        <button ng-click="saveAccount()">Save</button>
+        <button ng-click="saveAccount()" class="pure-button pure-button-primary" style="background-color:#10C017;">Save</button>
     </form>
-    <h2>Accounts</h2>
 
-    <table>
+    </br></br>
+    <table class="pure-table">
         <thead>
-        <tr>Email</tr>
-        <tr>Projects</tr>
-        <tr>Action</tr>
+            <tr>
+                <th>Email</th>
+                <th>Projects</th>
+                <th>Action</th>
+            </tr>
         </thead>
         <tbody>
         <tr ng-repeat="account in accounts">
