@@ -1,55 +1,87 @@
 <!DOCTYPE html>
 <html ng-app="GitlabMailer">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gitlab Mailer</title>
-    <link rel="icon" href="images/favicon.png" type="image/png" />
+    <link rel="icon" href="images/favicon.png" type="image/png"/>
+    <link rel="stylesheet" type="text/css" href="stylesheets/main.css">
     <link rel="stylesheet" type="text/css" href="stylesheets/pure-0.3.0.min.css">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pure-layout.css">
     <script type="text/javascript" src="javascripts/angular-1.2.4.min.js"></script>
 </head>
 <body>
-<div ng-controller="AccountController" style="margin:10px;">
+<div ng-controller="AccountController" class="pure-g-r enlist" id="layout">
 
-    <image src="images/gitlab-mailer.png" style="float:left; margin-right:10px;"/>
-    </br>
-    <h1>Gitlab Mailer</h1>
-    <small>Web Hook template: <span style="color:green;">http://host:9000/rest/gitlab/:app</span></small>
-    </br></br>
+    <div class="sidebar pure-u">
+        <header class="header">
+            <hgroup>
+                <image src="images/gitlab-mailer.png"/>
+                <h1>Mail Monster</h1>
 
-    <p style="clear:both;"></p>
+                <h2 class="brand-tagline">GitLab Web Hook Handler</h2>
+            </hgroup>
+        </header>
+        <br><br><br>
+        <footer class="footer">
+            <small>Web Hook template:</small>
+            <div class="pure-menu pure-menu-horizontal pure-menu-open">
+                <small><span style="color:green;">http://host:9000/rest/gitlab/:app</span></small>
+            </div>
+        </footer>
+    </div>
 
-    <form class="pure-form">
-        <label>Email</label> <input type="email" ng-model="newAccount.email"/>
-        <label>Projects</label> <input type="text" ng-model="newAccount.projects"/>
-        <button ng-click="saveAccount()" class="pure-button pure-button-primary" style="background-color:#10C017;">Save</button>
-    </form>
+    <div class="pure-u-1">
+        <div class="content">
+            <!-- A wrapper for all the blog posts -->
+            <div class="posts">
+                <h1 class="content-subhead">Account Details</h1>
 
-    </br></br>
-    <table class="pure-table">
-        <thead>
-            <tr>
-                <th>Email</th>
-                <th>Projects</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-        <tr ng-repeat="account in accounts">
-            <td> {{ account.email }}</td>
-            <td> {{account.projects }}</td>
-            <td>
-                <a href="#" ng-click="edit(account.email)">edit</a> |
-                <a href="#" ng-click="delete(account.email)">delete</a>
-            </td>
-        </tbody>
-    </table>
+                <!-- A single blog post -->
+                <section class="post">
+                    <form class="pure-form pure-form-stacked">
+                        <label>Email</label> <input type="email" ng-model="newAccount.email" style="width:50%;"/>
+                        <label>Projects</label> <input type="text" ng-model="newAccount.projects" style="width:50%;"/>
+                        <button ng-click="saveAccount()" class="pure-button pure-button-primary" style="background-color:#10C017;">Save</button>
+                    </form>
+                </section>
+            </div>
 
+            <div class="posts">
+                <h1 class="content-subhead">Accounts Subscribed</h1>
+
+                <!-- A single blog post -->
+                <section class="post">
+                    <table class="pure-table">
+                        <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Projects</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="account in accounts">
+                            <td> {{ account.email }}</td>
+                            <td> {{account.projects }}</td>
+                            <td>
+                                <a href="#" ng-click="edit(account.email)">edit</a> |
+                                <a href="#" ng-click="delete(account.email)">delete</a>
+                            </td>
+                        </tbody>
+                    </table>
+                </section>
+            </div>
+
+        </div>
+    </div>
 </div>
 <script type="text/javascript">
     angular.module('GitlabMailer', []).controller('AccountController', ['$scope', '$http', function($scope, $http) {
 	    $scope.accounts = [];
 
 	    $scope.saveAccount = function() {
-	        if ($scope.newAccount.email != null) {
+	        if (typeof ($scope.newAccount.email) !== 'undefined') {
                $http({method: 'POST', url: '/rest/db/account', header: {'Content-Type' : 'application/json'}, data: $scope.newAccount}).success(function(data) {
                     retrieveAccounts();
                 });
@@ -80,7 +112,6 @@
         retrieveAccounts();
 
 	}]);
-
 </script>
 </body>
 </html>
