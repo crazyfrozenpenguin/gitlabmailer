@@ -9,6 +9,10 @@ import anorm.SqlParser._
 import play.api.libs.json._
 import anorm.~
 import anorm.Id
+import scala.collection.{mutable, LinearSeq}
+import scala.collection.mutable.ListBuffer
+
+import mutable.Buffer
 
 case class Account(email:Pk[String], projects:String)
 
@@ -45,6 +49,23 @@ object Account {
     DB.withConnection { implicit connection =>
       SQL("select * from account").as(Account.simple *)
     }
+  }
+
+  def findAllEmailsOnProject(proj:String):Buffer[String] = {
+    var result:Buffer[String] = ListBuffer()
+    DB.withConnection { implicit connection =>
+      var list:Seq[Account] = SQL("SELECT * FROM account acc WHERE acc.projects LIKE {project}").on(
+        'project -> ("%" + proj + "%")
+      ).as(Account.simple *)
+
+      // FIXME: It's late and Coffee is required! Update DB structure so that this lame loop is unnecessary... if ever!
+      list.foreach( acc =>
+        if (acc.projects.split(",").contains(proj)) {
+          result += acc.email.get
+        }
+      )
+    }
+    result
   }
 
   def create(account: Account): Unit = {

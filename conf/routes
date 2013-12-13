@@ -2,13 +2,14 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Home page
-GET     /mailer/*file                    controllers.Assets.at(path="/public", file)
-
-POST    /rest/gitlab/:app                controllers.Mailer.fromGitlab(app: String)
+POST    /rest/gitlab/:proj               controllers.Mailer.fromGitlab(proj: String)
 
 GET     /rest/db/accounts                controllers.Application.listAccounts
 
 POST    /rest/db/account                 controllers.Application.updateAccount
 
 DELETE  /rest/db/account/:email          controllers.Application.deleteAccount(email:String)
+
+GET     /mailer/*file                    controllers.Assets.at(path="/public", file)
+GET     /*file                           controllers.Assets.at(path="/public", file)
+GET     /                                controllers.Assets.at(path="/public", file="index.html")

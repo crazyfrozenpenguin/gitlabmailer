@@ -56,8 +56,8 @@ package object mail {
       // Set server details
       val conf = Play.current.configuration
 
-      commonsMail.setHostName(conf.getString("mail.hostname").get)
-      commonsMail.setSmtpPort(conf.getInt("mail.smtp.port").get)
+      commonsMail.setHostName(getConfString("mail.hostname"))
+      commonsMail.setSmtpPort(getConfInt("mail.smtp.port"))
       commonsMail.setSSLOnConnect(conf.getBoolean("mail.ssl").get)
       commonsMail.setAuthenticator(new DefaultAuthenticator(conf.getString("mail.username").get, conf.getString("mail.password").get))
 
@@ -68,4 +68,15 @@ package object mail {
     }
   }
 
+  def getConfString(prop:String):String = {
+    Play.current.configuration.getString(prop).getOrElse("")
+  }
+
+  def getConfInt(prop:String):Int = {
+    Play.current.configuration.getInt(prop).getOrElse(-1)
+  }
+
+  def getDefaultFrom():String = {
+    getConfString("mail.from")
+  }
 }
