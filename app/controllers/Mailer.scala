@@ -4,6 +4,8 @@ import mail.{Mail, send}
 import play.api.mvc._
 import play.api.libs.json._
 import model.Account
+import scala.collection.mutable.ListBuffer
+import scala.collection.mutable
 
 /**
  * Created with IntelliJ IDEA.
@@ -74,12 +76,23 @@ object Mailer extends Controller {
           try {
             val gp = request.body.as[GitPush]
 
-            send a new Mail(
-              from = (mail.getDefaultFrom, "Mail Monster"),
-              to = Account.findAllEmailsOnProject(proj),
-              subject = gp.username + " pushed to " + proj + "/" + gp.ref.split("/").last + " (" + gp.after + ")",
-              message = createMessageBody(gp)
-            )
+            val accounts = Account.findAllEmailsOnProject(proj)
+            val plainOnly: Seq[String] = accounts collect {
+              case acc if acc._2 == "Text" => acc._1
+            }
+            val htmlOnly: Seq[String] = accounts collect {
+              case acc if acc._2 == "HTML" => acc._1
+            }
+
+            val subject = gp.username + " pushed to " + proj + "/" + gp.ref.split("/").last + " (" + gp.after + ")"
+            val message = createMessageBody(gp)
+            if (!plainOnly.isEmpty) {
+              sendMail(plainOnly, subject, message)
+            }
+            if (!htmlOnly.isEmpty) {
+              val htmlMessage = Option(createHtmlMessageBody(gp, subject))
+              sendMail(htmlOnly, subject, message, htmlMessage)
+            }
 
             Ok(Json.obj("status" -> "OK")).as("application/json")
 
@@ -94,7 +107,17 @@ object Mailer extends Controller {
     }
   }
 
-  def createMessageBody(gp:GitPush) = {
+  def sendMail(emailList: Seq[String], subject: String, plain: String, html: Option[String] = None) = {
+    send a new Mail(
+      from = (mail.getConfiguredSenderEmail, "Mail Monster"),
+      to = emailList,
+      subject = subject,
+      message = plain,
+      richMessage = html
+    )
+  }
+
+  def createMessageBody(gp: GitPush): String = {
     var body = "Mail Monster Push Notification\n\n" +
       "Repository: " + gp.repository.name + "\n" +
       "Git: " + gp.repository.url + "\n" +
@@ -109,11 +132,93 @@ object Mailer extends Controller {
       body += "\tCommit: " + c.id + "\n" +
         "\tBy: " + c.author.name + " (" + c.author.email + ")\n" +
         "\tWhen: " + c.timestamp + "\n" +
-        "\tUrl: " + c.url + "\n" +
-        "\tMessage: " + c.message + "\n\n"
+        "\tMessage: " + c.message + "\n" +
+        "\tUrl: " + c.url + "\n\n"
     )
 
     body
   }
+
+  def createHtmlMessageBody(gp: GitPush, subject: String): String = {
+    var commits = "";
+
+    gp.commits.foreach(c =>
+      commits += """
+          <table style="padding-left:50px;">
+            <thead>
+              <th>Commit:</th>
+              <th>By:</th>
+              <th>When:</th>
+              <th>Message:</th>
+              <th>Url:</th>
+            </thead>
+            <tbody>""" +
+        "<tr><td>" + c.id + "</td></tr>" +
+        "<tr><td>" + c.author.name + "(" + c.author.email + ")</td></tr>" +
+        "<tr><td>" + c.timestamp + "</td></tr>" +
+        "<tr><td>" + c.message + "</td></tr>" +
+        "<tr><td>" + c.url +
+        """  </td></tr>
+            </tbody>
+          </table><br><br>"""
+    )
+
+    val html = """
+    <html>
+      <head>
+        <title>""" + subject + """</title>
+        <style>
+          table, td, th {border: 1px;}
+
+          thead {float:left;}
+
+          thead th {display:block; margin-bottom:2px; text-align:right;}
+
+          tbody {float:right;}
+        </style>
+      </head>
+      <body>
+        <h2>""" + subject + """</h2>
+        <table>
+          <thead>
+            <th>Repository:</th>
+            <th>Git:</th>
+            <th>Gitlab:</th>
+            <th>Pushed by:</th>
+            <th>Ref:</th>
+            <th>Before:</th>
+            <th>After:</th>
+          </thead>
+          <tbody>
+            <tr>
+              <td>""" + gp.repository.name + """</td>
+            </tr>
+            <tr>
+              <td>""" + gp.repository.url + """</td>
+            </tr>
+            <tr>
+              <td>""" + gp.repository.homepage + """</td>
+            </tr>
+            <tr>
+              <td>""" + gp.username + """</td>
+            </tr>
+            <tr>
+              <td>""" + gp.ref + """</td>
+            </tr>
+            <tr>
+              <td>""" + gp.before + """</td>
+            </tr>
+            <tr>
+              <td>""" + gp.after + """</td>
+            </tr>
+          </tbody>
+        </table>
+        <h3>""" + gp.totalCommitsCount + """ new commits:</h3>
+        """ + commits + """
+      </body>
+    </html> """
+    html
+  }
+
 
 }

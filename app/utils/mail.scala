@@ -59,12 +59,13 @@ package object mail {
       commonsMail.setHostName(getConfString("mail.hostname"))
       commonsMail.setSmtpPort(getConfInt("mail.smtp.port"))
       commonsMail.setSSLOnConnect(conf.getBoolean("mail.ssl").get)
-      commonsMail.setAuthenticator(new DefaultAuthenticator(conf.getString("mail.username").get, conf.getString("mail.password").get))
 
-      commonsMail.
-        setFrom(mail.from._1, mail.from._2).
-        setSubject(mail.subject).
-        send()
+      val username = conf.getString("mail.username")
+      if (username.isDefined) {
+        commonsMail.setAuthenticator(new DefaultAuthenticator(username.get, conf.getString("mail.password").get))
+      }
+
+      commonsMail.setFrom(mail.from._1, mail.from._2).setSubject(mail.subject).send()
     }
   }
 
@@ -76,7 +77,7 @@ package object mail {
     Play.current.configuration.getInt(prop).getOrElse(-1)
   }
 
-  def getDefaultFrom():String = {
+  def getConfiguredSenderEmail():String = {
     getConfString("mail.from")
   }
 }
